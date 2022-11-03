@@ -1,0 +1,109 @@
+CREATE DATABASE SaleOfTrainTickets
+USE SaleOfTrainTickets
+select @@servername
+
+
+CREATE TABLE Ticket
+(
+ID INT PRIMARY KEY IDENTITY,
+Price MONEY NOT NULL DEFAULT 0,
+Date DATE NOT NULL,
+Place_number INT,
+)
+
+CREATE TABLE Route
+(
+ID_Routes INT REFERENCES Ticket (ID),
+Time_Arrival TIME NOT NULL,
+Time_Departure TIME NOT NULL,
+Arrival_Station NVARCHAR(30) NOT NULL,
+Departure_Station NVARCHAR(30) NOT NULL,
+Platform INT,
+ID INT PRIMARY KEY IDENTITY,
+)
+
+CREATE TABLE Trains
+(
+ID INT PRIMARY KEY IDENTITY,
+Train_Name NVARCHAR(20) NOT NULL,
+ID_Trains INT REFERENCES Route(ID),
+)
+
+CREATE TABLE Railway_Carriage
+(
+ID_Railway_Carriage INT REFERENCES Ticket(ID),
+Type_Of_Railway_Carriage NVARCHAR(20),
+Number_Of_Railway_Carriage INT,
+)
+
+
+INSERT Ticket VALUES (26, '2022-10-23', 5)
+INSERT Ticket VALUES (27, '2022-10-24', 8)
+INSERT Ticket VALUES (28, '2022-10-26', 1)
+
+INSERT Route VALUES(1, '14:15:00', '18:00:00', 'Гродно-ст', 'Минск-ст', 5)
+INSERT Route VALUES(2, '17:18:00', '18:20:00', 'Гродно-ст', 'Волковыск-ст', 1)
+INSERT Route VALUES(3, '02:10:00', '20:00:00', 'Гродно-ст', 'Орша-ст', 3)
+
+INSERT Trains VALUES ('615H', 1)
+INSERT Trains VALUES ('91JK', 2)
+INSERT Trains VALUES ('560T', 3)
+
+INSERT Railway_Carriage VALUES (1, 'Плацкарт', 8)
+INSERT Railway_Carriage VALUES (2, 'Плацкарт', 5)
+INSERT Railway_Carriage VALUES (3, 'Купе', 1)
+
+SELECT * FROM Ticket
+
+UPDATE Ticket SET Place_number = 2 WHERE ID=3
+
+SELECT*FROM Ticket
+
+--ALTER TABLE Ticket
+--ADD Pessenger_Name NVARCHAR(30) NOT NULL DEFAULT 'Неизвестно'
+
+SELECT*FROM Ticket
+
+--ALTER TABLE Ticket
+--DROP COLUMN Pessenger_Name
+
+SELECT*FROM Railway_Carriage
+WHERE Type_Of_Railway_Carriage ='Плацкарт'
+
+SELECT Ticket.Price, Ticket.Date, Ticket.Place_number, Route.Time_Arrival, Route.Time_Departure, Route.Arrival_Station, Route.Departure_Station, Route.Platform, Railway_Carriage.Type_Of_Railway_Carriage, Railway_Carriage.Number_Of_Railway_Carriage
+FROM Ticket
+JOIN Route ON Route.ID=Ticket.ID
+JOIN Railway_Carriage ON Railway_Carriage.ID_Railway_Carriage=Ticket.ID
+
+CREATE PROCEDURE ChangesTicket
+@Today DATE
+AS
+BEGIN
+UPDATE Ticket
+SET Price=10 WHERE Date=@Today
+END
+
+DECLARE @Today_ DATE;
+SET @Today_='2022-10-23'
+
+EXEC ChangesTicket @Today_
+SELECT *FROM Ticket
+
+SELECT Type_Of_Railway_Carriage, COUNT(*) AS COUNT
+FROM Railway_Carriage
+GROUP BY Type_Of_Railway_Carriage
+
+SELECT Type_Of_Railway_Carriage, COUNT(*) AS COUNT
+FROM Railway_Carriage
+GROUP BY Type_Of_Railway_Carriage
+HAVING COUNT(*)>1
+
+CREATE TRIGGER TICKET_INSERT_UPDATE
+ON Ticket
+AFTER INSERT,UPDATE
+AS
+UPDATE Ticket SET Price=Price+Price*0.13 WHERE ID=(SELECT ID FROM inserted)
+
+INSERT INTO Ticket  VALUES (12, '2022-11-01', 10)
+
+SELECT*FROM Ticket
